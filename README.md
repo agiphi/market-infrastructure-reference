@@ -27,3 +27,14 @@ python -m src.main
 - no external trading credentials
 
 This project is public technical evidence of systems and infrastructure architecture. It does not provide investment advice or imply trading profitability.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A[Synthetic Market Feed] --> B[Normalizer]
+  B --> C[Signal Engine]
+  C --> D[Risk Gate]
+  D --> E[Simulated Execution]
+  E --> F[Audit Event]
+```
