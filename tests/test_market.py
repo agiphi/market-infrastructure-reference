@@ -5,7 +5,7 @@ from market_infrastructure import MarketEvent, MarketNormalizer, MomentumSignal,
 
 
 def event(price, sequence=1):
-    return MarketEvent("SYNTH", price, sequence, datetime.now(timezone.utc))
+    return MarketEvent("SYNTH", price, datetime.now(timezone.utc), sequence)
 
 
 def test_normalizer_rejects_bad_sequence():
@@ -16,18 +16,19 @@ def test_normalizer_rejects_bad_sequence():
 
 
 def test_signal_detects_momentum():
-    s=MomentumSignal(window=3)
-    assert s.evaluate(event(10,1)) is None
-    assert s.evaluate(event(11,2)) is None
-    assert s.evaluate(event(12,3)) == "buy"
+    s=MomentumSignal(lookback=3)
+    assert s.evaluate(event(10,1)) == "HOLD"
+    assert s.evaluate(event(11,2)) == "HOLD"
+    assert s.evaluate(event(12,3)) == "BUY"
 
 
-def test_risk_gate_limits_notional():
-    gate=RiskGate(max_quantity=10,max_notional=100)
-    assert gate.approve(Order("SYNTH","buy",10,10))
-    assert not gate.approve(Order("SYNTH","buy",10,10.01))
+def test_risk_gate_limits_order_and_position():
+    gate=RiskGate(max_position=10,max_order=5)
+    assert gate.check("BUY",5,0).allowed
+    assert not gate.check("BUY",6,0).allowed
+    assert not gate.check("BUY",5,6).allowed
 
 
 def test_execution_boundary_rejects_invalid_order():
-    result=SimulatedExecutionAdapter().submit(Order("SYNTH","buy",0,10))
+    result=SimulatedExecutionAdapter().submit(Order("SYNTH","BUY",0,10))
     assert not result.accepted
