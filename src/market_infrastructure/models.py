@@ -16,3 +16,16 @@ class NormalizedEvent:
     sequence: int
     stale: bool = False
     gap_detected: bool = False
+
+@dataclass(frozen=True)
+class Order:
+    symbol: str
+    side: str
+    quantity: int
+    price: float
+
+@dataclass(frozen=True)
+class Execution:
+    order: Order
+    accepted: bool
+    reason: str
